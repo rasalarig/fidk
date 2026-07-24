@@ -24,6 +24,15 @@ export function pct(v: string | number | null | undefined): string {
   return n === null ? '—' : (n * 100).toLocaleString('pt-BR', { minimumFractionDigits: 4, maximumFractionDigits: 4 }) + '%';
 }
 
+/** Extrai uma mensagem legível de qualquer formato de erro HTTP (inclui 422 do FastAPI). */
+export function extrairErro(e: any, fallback = 'Ocorreu um erro.'): string {
+  const d = e?.error?.detail ?? e?.error?.message ?? e?.message;
+  if (typeof d === 'string') return d;
+  if (Array.isArray(d)) return d.map((x: any) => x?.msg ?? JSON.stringify(x)).join('; ');
+  if (d && typeof d === 'object') return d.msg ?? JSON.stringify(d);
+  return fallback;
+}
+
 export function dataBR(v: string | null | undefined): string {
   if (!v) return '—';
   const [y, m, d] = v.split('T')[0].split('-');

@@ -2,11 +2,12 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
 import { Classe, Cotista, Fundo } from '../../core/models';
-import { brl, cota, qtd } from '../../core/format';
+import { brl, cota, extrairErro, qtd } from '../../core/format';
+import { MaskDocDirective } from '../../core/mask-doc.directive';
 
 @Component({
   selector: 'app-cotistas',
-  imports: [FormsModule],
+  imports: [FormsModule, MaskDocDirective],
   template: `
     <div class="page-head">
       <h2>Cotistas &amp; movimentação</h2>
@@ -17,7 +18,7 @@ import { brl, cota, qtd } from '../../core/format';
       <div class="card pad">
         <h3 style="font-size:15px;margin-bottom:14px">Novo cotista</h3>
         <div class="stack gap12">
-          <div class="field"><label>Documento (CPF/CNPJ, só dígitos)</label><input class="input mono" [(ngModel)]="novo.documento" placeholder="11122233344" /></div>
+          <div class="field"><label>Documento (CPF ou CNPJ)</label><input class="input mono" maskDoc [(ngModel)]="novo.documento" placeholder="000.000.000-00" /></div>
           <div class="field"><label>Nome</label><input class="input" [(ngModel)]="novo.nome" placeholder="Investidor…" /></div>
           <div class="field"><label>Tipo de investidor</label>
             <select class="input" [(ngModel)]="novo.tipo_investidor">
@@ -124,7 +125,7 @@ export class Cotistas {
     this.msg.set(null);
     this.api.criarCotista(this.novo).subscribe({
       next: () => { this.novo = { documento: '', nome: '', tipo_investidor: 'GERAL' }; this.recarregar(); this.msg.set({ tipo: 'ok', texto: 'Cotista cadastrado.' }); },
-      error: (e) => this.msg.set({ tipo: 'err', texto: e?.error?.detail ?? 'Falha ao cadastrar.' }),
+      error: (e) => this.msg.set({ tipo: 'err', texto: extrairErro(e, 'Falha ao cadastrar.') }),
     });
   }
 
@@ -133,7 +134,7 @@ export class Cotistas {
     this.msg.set(null);
     this.api.aplicacao(this.classeId, this.cotistaId, this.data, this.valor).subscribe({
       next: (r) => { this.msg.set({ tipo: 'ok', texto: `Aplicação registrada — ${qtd(r.cotas_emitidas)} cotas a ${cota(r.valor_cota_aplicada)}.` }); this.valor = null; },
-      error: (e) => this.msg.set({ tipo: 'err', texto: e?.error?.detail ?? 'Falha na aplicação.' }),
+      error: (e) => this.msg.set({ tipo: 'err', texto: extrairErro(e, 'Falha na aplicação.') }),
     });
   }
 
@@ -142,7 +143,7 @@ export class Cotistas {
     this.msg.set(null);
     this.api.resgate(this.classeId, this.cotistaId, this.data, this.cotasResgate).subscribe({
       next: (r) => { this.msg.set({ tipo: 'ok', texto: `Resgate registrado — ${brl(r.valor_financeiro)} (${qtd(r.cotas_resgatadas)} cotas).` }); this.cotasResgate = null; },
-      error: (e) => this.msg.set({ tipo: 'err', texto: e?.error?.detail ?? 'Falha no resgate.' }),
+      error: (e) => this.msg.set({ tipo: 'err', texto: extrairErro(e, 'Falha no resgate.') }),
     });
   }
 }

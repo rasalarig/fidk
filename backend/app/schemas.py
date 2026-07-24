@@ -72,7 +72,7 @@ class AporteIn(BaseModel):
 
 
 class CotistaIn(BaseModel):
-    documento: str = Field(..., pattern=r"^\d{11}$|^\d{14}$")
+    documento: str  # normalizado (só dígitos) e validado no handler — aceita com pontuação
     nome: str
     tipo_investidor: str = "GERAL"
     distribuidor: str | None = None

@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
 import { Classe, Fechamento, Fundo } from '../../core/models';
-import { brl, cota, dataBR, pct, qtd } from '../../core/format';
+import { brl, cota, dataBR, extrairErro, pct, qtd } from '../../core/format';
 
 @Component({
   selector: 'app-fechamento',
@@ -174,7 +174,7 @@ export class FechamentoPage {
         this.recarregar();
       },
       error: (e) => {
-        this.msg.set({ tipo: 'err', texto: e?.error?.detail ?? 'Falha ao executar o fechamento.' });
+        this.msg.set({ tipo: 'err', texto: extrairErro(e, 'Falha ao executar o fechamento.') });
         this.processando.set(false);
       },
     });
@@ -191,7 +191,7 @@ export class FechamentoPage {
         this.valorAporte = null;
       },
       error: (e) => {
-        this.msg.set({ tipo: 'err', texto: e?.error?.detail ?? 'Falha ao registrar o aporte.' });
+        this.msg.set({ tipo: 'err', texto: extrairErro(e, 'Falha ao registrar o aporte.') });
         this.processando.set(false);
       },
     });
@@ -204,7 +204,7 @@ export class FechamentoPage {
         this.recarregar();
         if (this.detalhe()?.id === id) this.abrirId(id);
       },
-      error: (e) => this.msg.set({ tipo: 'err', texto: e?.error?.detail ?? 'Falha ao selar.' }),
+      error: (e) => this.msg.set({ tipo: 'err', texto: extrairErro(e, 'Falha ao selar.') }),
     });
   }
 

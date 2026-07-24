@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/api.service';
 import { Classe, Fundo, RelatorioPosicao } from '../../core/models';
-import { brl, cota, dataBR, pct, qtd } from '../../core/format';
+import { brl, cota, dataBR, extrairErro, pct, qtd } from '../../core/format';
 
 @Component({
   selector: 'app-relatorio',
@@ -186,7 +186,7 @@ export class Relatorio {
     this.rel.set(null);
     this.api.relatorioPosicao(this.classeId, this.data).subscribe({
       next: (r) => { this.rel.set(r); this.carregando.set(false); },
-      error: (e) => { this.erro.set(e?.error?.detail ?? 'Falha ao gerar o relatório.'); this.carregando.set(false); },
+      error: (e) => { this.erro.set(extrairErro(e, 'Falha ao gerar o relatório.')); this.carregando.set(false); },
     });
   }
 

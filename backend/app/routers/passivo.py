@@ -1,3 +1,4 @@
+import re
 from datetime import date
 from decimal import ROUND_HALF_EVEN, Decimal
 
@@ -41,13 +42,18 @@ async def _saldo_cotas(con: asyncpg.Connection, classe_id: str, cotista_id: str,
 # ---------------------------------------------------------------------
 @router.post("/cotistas", status_code=201)
 async def criar_cotista(body: CotistaIn, user: dict = Depends(require_permission("passivo.movimento.gerir"))):
+    documento = re.sub(r"\D", "", body.documento or "")
+    if len(documento) not in (11, 14):
+        raise HTTPException(400, "Documento inválido: informe um CPF (11 dígitos) ou CNPJ (14 dígitos).")
+    if not (body.nome or "").strip():
+        raise HTTPException(400, "Informe o nome do cotista.")
     async with pool().acquire() as con:
-        if await con.fetchval("select 1 from passivo.cotista where documento = $1", body.documento):
+        if await con.fetchval("select 1 from passivo.cotista where documento = $1", documento):
             raise HTTPException(409, "Já existe cotista com este documento.")
         row = await con.fetchrow(
             """insert into passivo.cotista (documento, nome, tipo_investidor, distribuidor, email)
                values ($1, $2, $3, $4, $5) returning id, documento, nome, tipo_investidor, situacao""",
-            body.documento, body.nome, body.tipo_investidor, body.distribuidor, body.email,
+            documento, body.nome.strip(), body.tipo_investidor, body.distribuidor, body.email,
         )
     return dict(row)
 
