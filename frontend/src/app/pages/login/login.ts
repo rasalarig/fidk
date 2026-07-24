@@ -9,11 +9,11 @@ import { AuthService } from '../../core/auth.service';
   template: `
     <div class="login-wrap">
       <section class="login-brand">
-        <div class="brand">
-          <div class="mark">F</div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <img src="/logo.svg" alt="" style="width:60px;height:60px" />
           <div>
-            <div class="name">FIDK</div>
-            <div class="sub">Controladoria de FIDC</div>
+            <div style="font-size:30px;font-weight:800;letter-spacing:-.02em;color:#fff;line-height:1">FIDK</div>
+            <div style="font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8a94a1;margin-top:5px">Gestão de FIDCs</div>
           </div>
         </div>
         <div>
@@ -29,7 +29,6 @@ import { AuthService } from '../../core/auth.service';
 
       <section class="login-form-side">
         <div class="login-card stack gap16">
-          <img src="/logo.png" alt="FIDCS Controladoria" style="width:200px;align-self:center" />
           <div>
             <h2>Entrar</h2>
             <p class="muted" style="margin:4px 0 0;font-size:14px">Acesse com suas credenciais.</p>

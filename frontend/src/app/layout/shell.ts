@@ -8,8 +8,12 @@ import { AuthService } from '../core/auth.service';
   template: `
     <div class="app-shell">
       <aside class="sidebar">
-        <div class="brand-logo">
-          <img src="/logo.png" alt="FIDCS Controladoria" />
+        <div class="brand">
+          <img class="brand-ico" src="/logo.svg" alt="" />
+          <div>
+            <div class="name">FIDK</div>
+            <div class="sub">Gestão de FIDCs</div>
+          </div>
         </div>
 
         <div class="nav-group">Operação</div>
@@ -60,8 +64,7 @@ import { AuthService } from '../core/auth.service';
     </div>
   `,
   styles: [`
-    .brand-logo { background:#fff; border-radius:12px; padding:14px 16px; display:flex; justify-content:center; margin-bottom:16px; box-shadow:0 1px 3px rgba(0,0,0,.15); }
-    .brand-logo img { width:100%; max-width:150px; display:block; }
+    .brand-ico { width:40px; height:40px; flex:none; }
   `],
 })
 export class Shell {
