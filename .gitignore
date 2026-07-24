@@ -19,6 +19,8 @@ npm-debug.log*
 *.dump
 *.sql.bak
 /data/
+# arquivos grandes de teste (gerados por tools/gerar_boletas.py)
+sample-data/
 
 # IDE / SO
 .idea/
