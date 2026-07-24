@@ -16,6 +16,12 @@ import { AuthService } from '../core/auth.service';
           </div>
         </div>
 
+        <div class="nav-group">Estrutura</div>
+        <a class="nav-item" routerLink="/fundos" routerLinkActive="active">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg>
+          Fundos &amp; classes
+        </a>
+
         <div class="nav-group">Operação</div>
         <a class="nav-item" routerLink="/dashboard" routerLinkActive="active">
           <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
@@ -73,6 +79,7 @@ export class Shell {
 
   secao(): string {
     const url = this.router.url;
+    if (url.includes('fundos')) return 'Fundos & classes';
     if (url.includes('boletas')) return 'Importação de boletas';
     if (url.includes('fechamento')) return 'Fechamento & valor de cota';
     if (url.includes('cotistas')) return 'Cotistas & movimentação';

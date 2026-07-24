@@ -56,6 +56,14 @@ export class ApiService {
     return this.http.get<Classe[]>(`${API_BASE}/fundos/${fundoId}/classes`);
   }
 
+  criarFundo(body: Record<string, any>): Observable<Fundo> {
+    return this.http.post<Fundo>(`${API_BASE}/fundos`, body);
+  }
+
+  criarClasse(fundoId: string, body: Record<string, any>): Observable<any> {
+    return this.http.post(`${API_BASE}/fundos/${fundoId}/classes`, body);
+  }
+
   importarBoleta(file: File): Observable<ImportacaoResultado> {
     const form = new FormData();
     form.append('file', file);

@@ -18,7 +18,7 @@ class UsuarioOut(BaseModel):
 
 # ---------- Fundos ----------
 class FundoIn(BaseModel):
-    cnpj: str = Field(..., pattern=r"^\d{14}$")
+    cnpj: str  # normalizado (só dígitos) e validado no handler — aceita com pontuação
     nome: str
     administrador: str | None = None
     gestor: str | None = None
