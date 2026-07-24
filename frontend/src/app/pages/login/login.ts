@@ -29,6 +29,7 @@ import { AuthService } from '../../core/auth.service';
 
       <section class="login-form-side">
         <div class="login-card stack gap16">
+          <img src="/logo.png" alt="FIDCS Controladoria" style="width:200px;align-self:center" />
           <div>
             <h2>Entrar</h2>
             <p class="muted" style="margin:4px 0 0;font-size:14px">Acesse com suas credenciais.</p>
