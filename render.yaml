@@ -1,0 +1,18 @@
+# Blueprint do Render — um único Web Service (Docker) que serve a API e o front.
+# Suba com "New > Blueprint" apontando para este repositório.
+services:
+  - type: web
+    name: fidk
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # String de conexão do Supabase. NÃO fica no repositório: defina no
+      # dashboard do Render (Environment). Inclua ?sslmode=require e a senha
+      # com caracteres especiais URL-encodados (@ -> %40, ! -> %21).
+      - key: FIDK_DATABASE_URL
+        sync: false
+      # Segredo do JWT — gerado automaticamente pelo Render.
+      - key: FIDK_JWT_SECRET
+        generateValue: true

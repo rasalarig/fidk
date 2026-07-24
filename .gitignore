@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+
+# Banco / dados locais
+*.dump
+*.sql.bak
+/data/
+
+# IDE / SO
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
