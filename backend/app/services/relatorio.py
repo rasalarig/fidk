@@ -15,15 +15,20 @@ import asyncpg
 CENT = Decimal("0.01")
 
 _ESTOQUE = """
-with base as (
+with dref as (select du_acumulado from fund.calendario where data = $2::date),
+base as (
   select dc.numero_titulo, dc.tipo_ativo, dc.data_vencimento,
          dc.valor_face, dc.valor_aquisicao,
          s.nome as sacado, ced.nome as cedente,
-         fund.dias_uteis(dc.data_aquisicao, dc.data_vencimento) as du_total,
-         fund.dias_uteis($2::date, dc.data_vencimento)          as du_rem
+         coalesce(cv.du_acumulado - ca.du_acumulado,
+                  fund.dias_uteis(dc.data_aquisicao, dc.data_vencimento)) as du_total,
+         coalesce(cv.du_acumulado - (select du_acumulado from dref),
+                  fund.dias_uteis($2::date, dc.data_vencimento))          as du_rem
   from ativo.direito_creditorio dc
   join ativo.sacado  s   on s.id = dc.sacado_id
   join ativo.cedente ced on ced.id = dc.cedente_id
+  left join fund.calendario ca on ca.data = dc.data_aquisicao
+  left join fund.calendario cv on cv.data = dc.data_vencimento
   where dc.classe_id = $1 and dc.situacao = 'ATIVO' and dc.data_aquisicao <= $2::date
 )
 select numero_titulo, tipo_ativo, data_vencimento, valor_face, sacado, cedente,

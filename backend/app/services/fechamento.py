@@ -27,12 +27,17 @@ PAR = Decimal("1.000000000000")     # cota inicial ao par (R$ 1,000000)
 # PV performing = VF / (VF/VA)^(du_restante/du_total); vencido é mantido a VF.
 # PDD = VF * pct_pdd(dias de atraso). "A receber" = VF dos títulos vencidos.
 _MARCACAO = """
-with base as (
+with dref as (select du_acumulado from fund.calendario where data = $2::date),
+base as (
   select dc.valor_face, dc.valor_aquisicao,
-         fund.dias_uteis(dc.data_aquisicao, dc.data_vencimento) as du_total,
-         fund.dias_uteis($2::date, dc.data_vencimento)          as du_rem,
-         greatest(($2::date - dc.data_vencimento), 0)           as dias_atraso
+         coalesce(cv.du_acumulado - ca.du_acumulado,
+                  fund.dias_uteis(dc.data_aquisicao, dc.data_vencimento)) as du_total,
+         coalesce(cv.du_acumulado - (select du_acumulado from dref),
+                  fund.dias_uteis($2::date, dc.data_vencimento))          as du_rem,
+         greatest(($2::date - dc.data_vencimento), 0)                     as dias_atraso
   from ativo.direito_creditorio dc
+  left join fund.calendario ca on ca.data = dc.data_aquisicao
+  left join fund.calendario cv on cv.data = dc.data_vencimento
   where dc.classe_id = $1
     and dc.situacao = 'ATIVO'
     and dc.data_aquisicao <= $2::date

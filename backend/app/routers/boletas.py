@@ -1,4 +1,7 @@
+import json
+
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
 
 from ..db import pool
 from ..schemas import ImportacaoResultado
@@ -6,6 +9,29 @@ from ..security import require_permission
 from ..services import ingestao
 
 router = APIRouter(prefix="/boletas", tags=["boletas"])
+
+
+@router.post("/importar/stream")
+async def importar_stream(
+    file: UploadFile,
+    user: dict = Depends(require_permission("ativo.boleta.importar")),
+):
+    """Importa em lotes, transmitindo o progresso em tempo real (NDJSON)."""
+    conteudo = await file.read()
+    if not conteudo:
+        raise HTTPException(400, "Arquivo vazio.")
+    nome = file.filename or "boleta"
+
+    async def gen():
+        try:
+            async for evt in ingestao.importar_boleta_stream(nome, conteudo, user):
+                yield json.dumps(evt, ensure_ascii=False) + "\n"
+        except ValueError as e:
+            yield json.dumps({"tipo": "erro", "mensagem": str(e)}, ensure_ascii=False) + "\n"
+        except Exception as e:  # noqa: BLE001 — reporta a falha ao cliente e encerra o stream
+            yield json.dumps({"tipo": "erro", "mensagem": f"Falha no processamento: {e}"}, ensure_ascii=False) + "\n"
+
+    return StreamingResponse(gen(), media_type="application/x-ndjson")
 
 
 @router.post("/importar", response_model=ImportacaoResultado)

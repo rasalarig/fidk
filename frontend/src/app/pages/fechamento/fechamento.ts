@@ -70,6 +70,11 @@ import { brl, cota, dataBR, pct, qtd } from '../../core/format';
             <div class="comp strong"><span>Quantidade de cotas</span><b class="tnum">{{ qtd(d.quantidade_cotas) }}</b></div>
             <div class="comp strong amber"><span>Valor da cota</span><b class="tnum">{{ cota(d.valor_cota) }}</b></div>
           </div>
+          @if (!d.valor_cota) {
+            <div class="alert" style="background:var(--amber-wash);color:#5a4415;margin-top:16px">
+              Sem cotas emitidas até esta data. Só importar recebíveis deixa o <b>caixa negativo</b> (a compra é financiada) e o <b>PL zero</b>. Registre um <b>aporte</b> (aba Cotistas) igual ao capital investido — a cota nasce em ~R$ 1,00 e passa a evoluir na curva.
+            </div>
+          }
         </div>
       </div>
     }

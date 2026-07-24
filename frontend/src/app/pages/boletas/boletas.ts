@@ -30,6 +30,14 @@ import { dataBR } from '../../core/format';
         <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px" [disabled]="!arquivo() || enviando()" (click)="importar()">
           @if (enviando()) { <span class="spin"></span> Processando… } @else { Importar boletas }
         </button>
+        @if (enviando()) {
+          <div style="margin-top:14px">
+            <div class="row between" style="font-size:12.5px;margin-bottom:6px">
+              <span class="muted">{{ etapa() }}</span><span class="mono">{{ progresso() }}%</span>
+            </div>
+            <div class="pbar"><div class="pbar-fill" [style.width.%]="progresso()"></div></div>
+          </div>
+        }
         @if (erro()) { <div class="alert err" style="margin-top:12px">{{ erro() }}</div> }
       </div>
 
@@ -126,6 +134,8 @@ import { dataBR } from '../../core/format';
     .mini b { font-size: 22px; font-weight: 800; }
     .mini.ok b { color: var(--teal-deep); }
     .mini.crit b { color: var(--crit); }
+    .pbar { height: 8px; background: var(--line); border-radius: 6px; overflow: hidden; }
+    .pbar-fill { height: 100%; background: var(--teal); border-radius: 6px; transition: width .2s ease; }
   `],
 })
 export class Boletas {
@@ -135,6 +145,8 @@ export class Boletas {
   arquivo = signal<File | null>(null);
   over = signal(false);
   enviando = signal(false);
+  etapa = signal<string | null>(null);
+  progresso = signal(0);
   erro = signal<string | null>(null);
   resultado = signal<ImportacaoResultado | null>(null);
   lotes = signal<Lote[]>([]);
@@ -157,22 +169,41 @@ export class Boletas {
     if (f) this.arquivo.set(f);
   }
 
-  importar() {
+  async importar() {
     const f = this.arquivo();
     if (!f) return;
     this.enviando.set(true);
     this.erro.set(null);
-    this.api.importarBoleta(f).subscribe({
-      next: (r) => {
-        this.resultado.set(r);
-        this.enviando.set(false);
-        this.recarregarLotes();
-      },
-      error: (e) => {
-        this.erro.set(e?.error?.detail ?? 'Falha ao importar o arquivo.');
-        this.enviando.set(false);
-      },
-    });
+    this.resultado.set(null);
+    this.progresso.set(0);
+    this.etapa.set('Enviando arquivo…');
+    try {
+      const r = await this.api.importarBoletaStream(f, (evt) => this.onEvento(evt));
+      this.resultado.set(r);
+      this.recarregarLotes();
+    } catch (e: any) {
+      this.erro.set(e?.message ?? 'Falha ao importar o arquivo.');
+    } finally {
+      this.enviando.set(false);
+      this.etapa.set(null);
+    }
+  }
+
+  private onEvento(evt: any) {
+    if (evt.tipo === 'status') {
+      const labels: Record<string, string> = {
+        recebido: 'Recebido…',
+        validando: 'Validando linhas…',
+        validado: `Validado — ${evt.validas?.toLocaleString('pt-BR')} válidas`,
+        staging: 'Carregando dados (COPY)…',
+        contrapartes: 'Registrando cedentes e sacados…',
+      };
+      this.etapa.set(labels[evt.etapa] ?? evt.etapa);
+      if (['validado', 'staging', 'contrapartes'].includes(evt.etapa)) this.progresso.set(4);
+    } else if (evt.tipo === 'progresso') {
+      this.etapa.set(`Inserindo recebíveis… ${evt.inseridas.toLocaleString('pt-BR')} de ${evt.total.toLocaleString('pt-BR')}`);
+      this.progresso.set(Math.round((evt.processadas / evt.total) * 100));
+    }
   }
 
   recarregarLotes() {

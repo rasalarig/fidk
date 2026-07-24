@@ -1,12 +1,52 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { API_BASE } from './auth.service';
+import { API_BASE, AuthService } from './auth.service';
 import { Classe, Cotista, Fechamento, Fundo, ImportacaoResultado, Lote, RelatorioPosicao, Rejeicao } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private http = inject(HttpClient);
+  private auth = inject(AuthService);
+
+  /**
+   * Importa em lotes com progresso em tempo real. Chama `onEvento` para cada
+   * evento (status/progresso) e resolve com o resultado final.
+   */
+  async importarBoletaStream(file: File, onEvento: (e: any) => void): Promise<ImportacaoResultado> {
+    const form = new FormData();
+    form.append('file', file);
+    const token = this.auth.token();
+    const resp = await fetch(`${API_BASE}/boletas/importar/stream`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    if (!resp.ok || !resp.body) throw new Error(`Falha na importação (HTTP ${resp.status}).`);
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let resultado: ImportacaoResultado | null = null;
+
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nl: number;
+      while ((nl = buffer.indexOf('\n')) >= 0) {
+        const linha = buffer.slice(0, nl).trim();
+        buffer = buffer.slice(nl + 1);
+        if (!linha) continue;
+        const evt = JSON.parse(linha);
+        if (evt.tipo === 'erro') throw new Error(evt.mensagem);
+        if (evt.tipo === 'resultado') resultado = evt;
+        onEvento(evt);
+      }
+    }
+    if (!resultado) throw new Error('A importação não retornou resultado.');
+    return resultado;
+  }
 
   fundos(): Observable<Fundo[]> {
     return this.http.get<Fundo[]>(`${API_BASE}/fundos`);
