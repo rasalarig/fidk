@@ -50,8 +50,6 @@ import { AuthService } from '../../core/auth.service';
           <button class="btn btn-primary" (click)="entrar()" [disabled]="carregando()" style="justify-content:center">
             @if (carregando()) { <span class="spin"></span> Entrando… } @else { Entrar }
           </button>
-
-          <p class="muted mono" style="font-size:11.5px;text-align:center">seed: admin&#64;fidk.local / trocar&#64;123</p>
         </div>
       </section>
     </div>
@@ -61,7 +59,7 @@ export class Login {
   private auth = inject(AuthService);
   private router = inject(Router);
 
-  email = 'admin@fidk.local';
+  email = '';
   senha = '';
   carregando = signal(false);
   erro = signal<string | null>(null);
